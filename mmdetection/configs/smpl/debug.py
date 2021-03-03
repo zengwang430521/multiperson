@@ -148,7 +148,7 @@ common_train_cfg = dict(
     with_trans=True,
     # max_samples=1024
     square_bbox=square_bbox,
-    mosh_path='data/h36m/extras/h36m_single_train_openpose.npz',
+    mosh_path='data/CMU_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
     # rot_factor=30,
@@ -174,29 +174,33 @@ common_val_cfg = dict(
     use_poly=True,
 )
 
-h36m_dataset_type = 'H36MDataset'
-h36m_data_root = 'data/h36m/'
+h36m_dataset_type = 'CommonDataset'
+
+h36m_data_root = '/home/wzeng/mydata/H36Mnew/c2f_vol/'
+h36m_eval_root = '/home/wzeng/mydata/MyH36MOrigin/images/'
+
 coco_dataset_type = 'COCOKeypoints'
-coco_data_root = 'data/coco/'
+coco_data_root = '/home/wzeng/mydata/coco/'
+
 common_dataset = 'CommonDataset'
-pose_track_root = 'data/posetrack2018/'
-mpii_root = 'data/mpii/'
-mpi_inf_3dhp_root = 'data/mpi_inf_3dhp/'
-panoptic_root = 'data/Panoptic/'
+pose_track_root = '/home/wzeng/mydata/posetrack2018/'
+mpii_root = '/home/wzeng/mydata/mpii/'
+mpi_inf_3dhp_root = '/home/wzeng/mydata/mpi_inf_3dhp_new/'
+panoptic_root = '/home/wzeng/mydata/panoptic/'
 
 datasets = [
     dict(
         train=dict(
             type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'extras/rcnn/h36m_train.pkl',
-            img_prefix=h36m_data_root + 'images/',
+            ann_file=h36m_data_root + 'rcnn/train.pkl',
+            img_prefix=h36m_data_root,
             sample_weight=0.6,
             **common_train_cfg
         ),
         val=dict(
             type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'extras/rcnn/h36m_val.pkl',
-            img_prefix=h36m_data_root + 'images/',
+            ann_file=h36m_data_root + 'rcnn/val.pkl',
+            img_prefix=h36m_eval_root,
             sample_weight=0.6,
             **common_val_cfg
         ),
@@ -204,7 +208,6 @@ datasets = [
     dict(
         train=dict(
             type=common_dataset,
-            # ann_file=coco_data_root + 'annotations/train_densepose_2014_scene.pkl',
             ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
             img_prefix=coco_data_root + 'train2014/',
             sample_weight=0.3,
@@ -280,8 +283,8 @@ datasets = [
     ),
 ]
 data = dict(
-    imgs_per_gpu=4,
-    workers_per_gpu=4,
+    imgs_per_gpu=2,
+    workers_per_gpu=0,
     train=common_train_cfg,
     val=common_val_cfg,
 )

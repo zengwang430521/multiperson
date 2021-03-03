@@ -2,11 +2,18 @@ import os.path as osp
 import torch
 import torchvision
 from mmdetection.mmdet.models.utils.smpl_utils import batch_rodrigues, J24_TO_J14, H36M_TO_J14, J24_TO_H36M
-from mmdetection.mmdet.models.utils.pose_utils import reconstruction_error, vectorize_distance
+
+# from mmdetection.mmdet.models.utils.pose_utils import reconstruction_error, vectorize_distance
+from mmdetection.mmdet.models.utils.pose_utils import reconstruction_error
+
 from mmdetection.mmdet.core.utils import AverageMeter
 from mmdetection.mmdet.models.utils.camera import PerspectiveCamera
 from mmdetection.mmdet.models.utils.smpl.renderer import Renderer
-from mmdetection.mmdet.models.utils.smpl.body_models import SMPL, JointMapper
+
+# from mmdetection.mmdet.models.utils.smpl.body_models import SMPL, JointMapper
+from mmdetection.mmdet.models.utils.smpl.smpl import JointMapper
+from smplx.body_models import SMPL
+
 from mmdetection.mmdet.models.utils.smpl.viz import draw_skeleton, J24_TO_J14, get_bv_verts, plot_pose_H36M
 import cv2
 import matplotlib.pyplot as plt
@@ -15,7 +22,8 @@ import abc
 import math
 import h5py
 import scipy.io as scio
-from sdf import CollisionVolume
+
+# from sdf import CollisionVolume
 
 
 def compute_scale_transform(S1, S2):
@@ -190,7 +198,8 @@ class PanopticEvalHandler(EvalHandler):
         extra_joints = [8, 5, 45, 46, 4, 7, 21, 19, 17, 16, 18, 20, 47, 48, 49, 50, 51, 52, 53, 24, 26, 25, 28, 27]
         joints = torch.tensor(openpose_joints + extra_joints, dtype=torch.int32)
         joint_mapper = JointMapper(joints)
-        smpl_params = dict(model_folder='data/smpl',
+        smpl_params = dict(model_path='data/smpl',
+                           # model_folder='data/smpl',
                            joint_mapper=joint_mapper,
                            create_glb_pose=True,
                            body_pose_param='identity',
@@ -203,21 +212,21 @@ class PanopticEvalHandler(EvalHandler):
         self.smpl = SMPL(**smpl_params)
         self.J_regressor = torch.from_numpy(np.load(JOINT_REGRESSOR_H36M)).float()
         self.collision_meter = AverageMeter('P3', ':.2f')
-        self.collision_volume = CollisionVolume(self.smpl.faces, grid_size=64).cuda()
+        # self.collision_volume = CollisionVolume(self.smpl.faces, grid_size=64).cuda()
         self.coll_cnt = 0
         self.threshold_list = [0.1, 0.15, 0.2]
         self.total_ordinal_cnt = {i: 0 for i in self.threshold_list}
         self.correct_ordinal_cnt = {i: 0 for i in self.threshold_list}
 
     def handle(self, data_batch, pred_results, use_gt=False):
-        # Evaluate collision metric
-        pred_vertices = pred_results['pred_vertices']
-        pred_translation = pred_results['pred_translation']
-        cur_collision_volume = self.collision_volume(pred_vertices, pred_translation)
-        if cur_collision_volume.item() > 0:
-            # self.writer(f'Collision found with {cur_collision_volume.item() * 1000} L')
-            self.coll_cnt += 1
-        self.collision_meter.update(cur_collision_volume.item() * 1000.)
+        # # Evaluate collision metric
+        # pred_vertices = pred_results['pred_vertices']
+        # pred_translation = pred_results['pred_translation']
+        # cur_collision_volume = self.collision_volume(pred_vertices, pred_translation)
+        # if cur_collision_volume.item() > 0:
+        #     # self.writer(f'Collision found with {cur_collision_volume.item() * 1000} L')
+        #     self.coll_cnt += 1
+        # self.collision_meter.update(cur_collision_volume.item() * 1000.)
 
         pred_vertices = pred_results['pred_vertices'].cpu()
         pred_camera = pred_results['pred_camera'].cpu()
@@ -246,14 +255,29 @@ class PanopticEvalHandler(EvalHandler):
         fname = osp.basename(file_name)
 
         # To select closest points
-        glb_vis = (visible_kpts.sum(0) >= (
-                visible_kpts.shape[0] - 0.1)).float()[None, :, None]  # To avoid in-accuracy in float point number
+        glb_vis = (visible_kpts.sum(0) >= (visible_kpts.shape[0] - 0.1)).float()[None, :, None]  # To avoid in-accuracy in float point number
         if use_gt:
             paired_idxs = torch.arange(gt_keypoints_3d.shape[0])
         else:
-            dist = vectorize_distance((glb_vis * gt_keypoints_3d).numpy(),
-                                      (glb_vis * pred_keypoints_3d_smpl).numpy())
-            paired_idxs = torch.from_numpy(dist.argmin(1))
+            # def vectorize_distance(x, y):
+            #     dist = x[:, np.newaxis, :, :] - y[np.newaxis, :, :, :]
+            #     dist = np.linalg.norm(dist, ord=2, axis=-1)
+            #     dist = dist.mean(axis=-1)
+            #     return dist
+            # dist = vectorize_distance((glb_vis * gt_keypoints_3d).numpy(),
+            #                           (glb_vis * pred_keypoints_3d_smpl).numpy())
+            # paired_idxs = torch.from_numpy(dist.argmin(1))
+
+            def vectorize_distance(x, y):
+                dist = x.unsqueeze(1) - y.unsqueeze(0)
+                dist = dist.norm(p=2, dim=-1).mean(dim=-1)
+                # dist = dist.mean(dim=-2).norm(p=2, dim=-1)
+                return dist
+            dist = vectorize_distance((glb_vis * gt_keypoints_3d),
+                                      (glb_vis * pred_keypoints_3d_smpl))
+            paired_idxs = dist.argmin(1)
+
+
         is_mismatch = len(set(paired_idxs.tolist())) < len(paired_idxs)
         if is_mismatch:
             self.mismatch_cnt += 1
@@ -305,6 +329,10 @@ class PanopticEvalHandler(EvalHandler):
         self.writer(
             f'p1: {self.p1_meter.avg:.2f}mm, coll_cnt: {self.coll_cnt} coll: {self.collision_meter.avg} L')
 
+    def finalize(self):
+        print('Finish:')
+        print(f'p1: {self.p1_meter.avg:.2f}mm, coll_cnt: {self.coll_cnt} coll: {self.collision_meter.avg} L')
+
 
 class MuPoTSEvalHandler(EvalHandler):
 
@@ -322,7 +350,8 @@ class MuPoTSEvalHandler(EvalHandler):
         extra_joints = [8, 5, 45, 46, 4, 7, 21, 19, 17, 16, 18, 20, 47, 48, 49, 50, 51, 52, 53, 24, 26, 25, 28, 27]
         joints = torch.tensor(openpose_joints + extra_joints, dtype=torch.int32)
         joint_mapper = JointMapper(joints)
-        smpl_params = dict(model_folder='data/smpl',
+        smpl_params = dict(model_path='data/smpl',
+                           # model_folder='data/smpl',
                            joint_mapper=joint_mapper,
                            create_glb_pose=True,
                            body_pose_param='identity',
@@ -339,18 +368,18 @@ class MuPoTSEvalHandler(EvalHandler):
         self.h36m_to_MPI = [10, 8, 14, 15, 16, 11, 12, 13, 4, 5, 6, 1, 2, 3, 0, 7, 9]
 
         self.collision_meter = AverageMeter('collision', ':.2f')
-        self.collision_volume = CollisionVolume(self.smpl.faces, grid_size=64).cuda()
+        # self.collision_volume = CollisionVolume(self.smpl.faces, grid_size=64).cuda()
         self.coll_cnt = 0
 
     def handle(self, data_batch, pred_results, use_gt=False):
         # Evaluate collision metric
         pred_vertices = pred_results['pred_vertices']
         pred_translation = pred_results['pred_translation']
-        cur_collision_volume = self.collision_volume(pred_vertices, pred_translation)
-        if cur_collision_volume.item() > 0:
-            # self.writer(f'Collision found with {cur_collision_volume.item() * 100 } L')
-            self.coll_cnt += 1
-        self.collision_meter.update(cur_collision_volume.item() * 1000.)
+        # cur_collision_volume = self.collision_volume(pred_vertices, pred_translation)
+        # if cur_collision_volume.item() > 0:
+        #     # self.writer(f'Collision found with {cur_collision_volume.item() * 100 } L')
+        #     self.coll_cnt += 1
+        # self.collision_meter.update(cur_collision_volume.item() * 1000.)
 
         pred_vertices = pred_results['pred_vertices'].cpu()
         pred_camera = pred_results['pred_camera'].cpu()
@@ -369,6 +398,7 @@ class MuPoTSEvalHandler(EvalHandler):
         img_size = torch.zeros(batch_size, 2).to(pred_keypoints_3d_smpl.device)
         img_size += torch.tensor(img.shape[:-3:-1], dtype=img_size.dtype).to(img_size.device)
         rotation_Is = torch.eye(3).unsqueeze(0).repeat(batch_size, 1, 1).to(pred_keypoints_3d_smpl.device)
+
         pred_keypoints_2d_smpl = self.camera(pred_keypoints_3d_smpl, batch_size=batch_size, rotation=rotation_Is,
                                              translation=pred_translation,
                                              center=img_size / 2)
@@ -383,6 +413,9 @@ class MuPoTSEvalHandler(EvalHandler):
             # img_cv = draw_text(img_cv, {'mismatch': is_mismatch, 'error': str(error_smpl.mean(-1) * 1000)});
             img_cv = (img_cv / 255.)
             fname = osp.basename(data_batch['img_meta'].data[0][0]['file_name'])
+            if not osp.exists(self.viz_dir):
+                import os
+                os.makedirs(self.viz_dir)
             plt.imsave(osp.join(self.viz_dir, fname), img_cv)
 
         scale_factor = data_batch['img_meta'].data[0][0]['scale_factor']

@@ -31,7 +31,8 @@ def gather_per_image(x, img_dir):
         img = Image.open(os.path.join(img_dir, data[i]['filename']))
         data[i]['height'] = img.size[1]
         data[i]['width'] = img.size[0]
-        data[i]['bboxes'][:, :2] = np.minimum(data[i]['bboxes'][:, :2], np.zeros_like(data[i]['bboxes'][:, :2]))
+        # data[i]['bboxes'][:, :2] = np.minimum(data[i]['bboxes'][:, :2], np.zeros_like(data[i]['bboxes'][:, :2]))
+        data[i]['bboxes'][:, :2] = np.maximum(data[i]['bboxes'][:, :2], np.zeros_like(data[i]['bboxes'][:, :2]))
         data[i]['bboxes'][:, 2] = np.minimum(data[i]['bboxes'][:, 2], img.size[0] * np.ones_like(data[i]['bboxes'][:, 2]))
         data[i]['bboxes'][:, 3] = np.minimum(data[i]['bboxes'][:, 3], img.size[1] * np.ones_like(data[i]['bboxes'][:, 3]))
     return data

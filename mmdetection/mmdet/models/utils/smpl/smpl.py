@@ -67,3 +67,19 @@ class SMPL(_SMPL):
                              betas=smpl_output.betas,
                              full_pose=smpl_output.full_pose)
         return output
+
+
+class JointMapper(torch.nn.Module):
+    def __init__(self, joint_maps=None):
+        super(JointMapper, self).__init__()
+        if joint_maps is None:
+            self.joint_maps = joint_maps
+        else:
+            self.register_buffer('joint_maps',
+                                 torch.tensor(joint_maps, dtype=torch.long))
+
+    def forward(self, joints, **kwargs):
+        if self.joint_maps is None:
+            return joints
+        else:
+            return torch.index_select(joints, 1, self.joint_maps)

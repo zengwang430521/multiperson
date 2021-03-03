@@ -227,6 +227,7 @@ class H36MDataset(Dataset):
 
     def __len__(self):
         return len(self.img_infos)
+        # return len(self.img_infos) // 100  ##FIXME: Only for debug
 
     def load_annotations(self, ann_file):
         """
@@ -304,8 +305,8 @@ class H36MDataset(Dataset):
         return np.random.choice(pool)
 
     def __getitem__(self, idx):
-        # if self.test_mode:
-        #     return self.prepare_test_img(idx)
+        if self.test_mode:
+            return self.prepare_test_img(idx)
         while True:
             data = self.prepare_train_img(idx)
             if data is None:
@@ -404,9 +405,10 @@ class H36MDataset(Dataset):
 
         if self.with_nr:
             has_mask = True
-            if 'dp_mask_path' in ann:
-                raw_mask = cv2.imread(osp.join(self.img_prefix, ann['dp_mask_path']), cv2.IMREAD_UNCHANGED)
-            elif 'segmentation' in ann and self.use_poly:
+            # if 'dp_mask_path' in ann:
+            #     raw_mask = cv2.imread(osp.join(self.img_prefix, ann['dp_mask_path']), cv2.IMREAD_UNCHANGED)
+            # elif 'segmentation' in ann and self.use_poly:
+            if 'segmentation' in ann and self.use_poly:
                 assert 'COCO' in ann['filename'], "Only support coco segmentation now"
                 raw_mask = np.zeros((ann['height'], ann['width']), dtype=np.uint8)
                 for i, seg in enumerate(ann['segmentation']):
@@ -470,6 +472,7 @@ class H36MDataset(Dataset):
             gt_trans = ann['trans']
         if self.with_pose:
             gt_poses = ann['pose']
+            gt_poses = gt_poses.reshape(gt_poses.shape[0], 24, 3)
             if flip:
                 for i, ps in enumerate(gt_poses):
                     gt_poses[i] = flip_pose(ps.reshape(-1)).reshape(-1, 3)

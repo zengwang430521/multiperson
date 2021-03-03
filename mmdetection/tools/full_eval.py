@@ -34,7 +34,12 @@ from mmdetection.mmdet.models.utils.pose_utils import reconstruction_error
 import numpy as np
 from mmdetection.mmdet.core.utils.eval_utils import H36MEvalHandler, EvalHandler, PanopticEvalHandler, \
     MuPoTSEvalHandler
-from mmdetection.mmdet.models.utils.smpl.body_models import SMPL, JointMapper
+
+# from mmdetection.mmdet.models.utils.smpl.body_models import SMPL, JointMapper
+from mmdetection.mmdet.models.utils.smpl.smpl import JointMapper
+from smplx.body_models import SMPL
+
+
 import matplotlib.pyplot as plt
 import neural_renderer as nr
 
@@ -44,7 +49,7 @@ openpose_joints = [24, 12, 17, 19, 21, 16, 18, 20, 0, 2, 5, 8, 1, 4,
 extra_joints = [8, 5, 45, 46, 4, 7, 21, 19, 17, 16, 18, 20, 47, 48, 49, 50, 51, 52, 53, 24, 26, 25, 28, 27]
 joints = torch.tensor(openpose_joints + extra_joints, dtype=torch.int32)
 joint_mapper = JointMapper(joints)
-smpl_params = dict(model_folder='data/smpl',
+smpl_params = dict(model_path='data/smpl',
                    joint_mapper=joint_mapper,
                    create_glb_pose=True,
                    body_pose_param='identity',
@@ -85,12 +90,20 @@ eval_dataset_mapper = dict(
         img_prefix='data/rcnn-pretrain/' + 'h36m/' + 'images/',
         # **common_val_cfg
     ),
+    # full_h36m=dict(
+    #     type='H36MDataset',
+    #     ann_file='data/h36m/' + 'extras/rcnn/h36m_val.pkl',
+    #     img_prefix='data/h36m/' + 'images/',
+    #     # **common_val_cfg
+    # ),
+
     full_h36m=dict(
-        type='H36MDataset',
-        ann_file='data/h36m/' + 'extras/rcnn/h36m_val.pkl',
-        img_prefix='data/h36m/' + 'images/',
+        type='CommonDataset',
+        ann_file='/home/wzeng/mydata/H36Mnew/c2f_vol/rcnn/val.pkl',
+        img_prefix='/home/wzeng/mydata/MyH36MOrigin',
         # **common_val_cfg
     ),
+
     mupo_ts=dict(
         type='CommonDataset',
         ann_file='data/rcnn-pretrain/' + 'h36m/' + 'val.pkl',
@@ -140,7 +153,7 @@ eval_handler_mapper = dict(
     mupots=MuPoTSEvalHandler,
 )
 
-stable_list = ['mupots']
+stable_list = ['mupots', 'haggling']
 
 
 def parse_args():
@@ -228,7 +241,8 @@ def main():
 
     model = build_detector(
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
-    train_dataset = get_dataset(cfg.datasets[0].train)
+    # train_dataset = get_dataset(cfg.datasets[0].train)
+    train_dataset = get_dataset(cfg.datasets[1].train)
     if cfg.checkpoint_config is not None:
         # save mmdet version, config file content and class names in
         # checkpoints as meta data
@@ -248,6 +262,11 @@ def main():
                     cfg.log_level)
     runner.resume(cfg.resume_from)
     model = runner.model
+
+    # ONLY FOR DEBUG
+    # print('remove DDP for debug!')
+    # model = model._modules['module']
+
     model.eval()
 
     dataset_cfg = eval_dataset_mapper[args.dataset]
@@ -299,6 +318,9 @@ def main():
             except Exception as e:
                 tqdm.write(f"Fail on {file_name}")
                 tqdm.write(str(e))
+
+
+
     eval_handler.finalize()
 
 

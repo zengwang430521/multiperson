@@ -54,7 +54,7 @@ def coco_extract(dataset_path, out_path, version='2014', out_size=256):
     img_dir = os.path.join(dataset_path, 'pretrain')
     os.makedirs(img_dir, exist_ok=True)
 
-    imgnames_cropped = np.array([os.path.join('pretrain', str(i) + '_' + imgnames[i]) for i in range(len(imgnames))])
+    imgnames_cropped = np.array([os.path.join('pretrain', str(i) + '_' + os.path.basename(imgnames[i])) for i in range(len(imgnames))])
     bboxes = np.array(bboxes)
     kpts2d = np.array(kpts2d)
     for i in trange(len(imgnames)):
@@ -68,6 +68,10 @@ def coco_extract(dataset_path, out_path, version='2014', out_size=256):
         img, keypoints_2d, bbox = crop_image(img, kpts2d[i], bbox, center[0], center[1], box_size, box_size, out_size, out_size)
         kpts2d[i] = keypoints_2d
         bboxes[i] = bbox.reshape(-1)
+
+        imdir = os.path.dirname(os.path.join(dataset_path, imgnames_cropped[i]))
+        if not os.path.exists(imdir):
+            os.makedirs(imdir)
         cv2.imwrite(os.path.join(dataset_path, imgnames_cropped[i]), img)
 
     data = convert_to_pkl(imgnames_cropped, bboxes, kpts2d)

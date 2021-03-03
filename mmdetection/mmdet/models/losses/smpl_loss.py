@@ -270,6 +270,7 @@ class SMPLLoss(nn.Module):
                 bs, nf = face_tensor.shape[:2]
                 textures = torch.ones_like(face_tensor).float() + cur_pose_idxs.to(device)[:, None, None]
                 textures = textures[:, :, None, None, None, :]
+
                 rgb, depth, mask = self.neural_renderer(verts, face_tensor.int(), textures=textures, K=K, R=R, t=t,
                                                         dist_coeffs=torch.tensor([[0., 0., 0., 0., 0.]], device=device))
                 predicted_depth = depth[:, self.h_diff:rgb.shape[-2] - self.h_diff,

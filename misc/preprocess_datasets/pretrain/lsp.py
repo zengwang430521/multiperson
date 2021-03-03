@@ -52,6 +52,10 @@ def lsp_extract(dataset_path, out_path, out_size=256):
         kpts2d[img_i] = keypoints_2d
         bboxes[img_i] = bbox.reshape(-1)
         imgnames_cropped.append(imgname_cropped)
+
+        save_dir = os.path.dirname(os.path.join(dataset_path, imgname_cropped))
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
         cv2.imwrite(os.path.join(dataset_path, imgname_cropped), img)
 
     data = convert_to_pkl(imgnames_cropped, bboxes, kpts2d)

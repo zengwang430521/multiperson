@@ -66,6 +66,7 @@ J24_to_J15 = [12, 13, 14, 9, 10, 11,  # 5s
               2, 1, 0
               ]
 
+
 def process_panoptic(panoptic_path, dataset_name, sequence_idx):
     seq_idxs = np.loadtxt(sequence_idx).astype(int)
     annotation_dir = osp.join(panoptic_path, 'processed', 'annotations')
@@ -93,8 +94,9 @@ def process_panoptic(panoptic_path, dataset_name, sequence_idx):
         hd_img_path = osp.join(panoptic_path, dataset_name, 'hdImgs/')
         hd_skel_json_path = osp.join(panoptic_path, dataset_name, 'hdPose3d_stage1_coco19/')
         for hd_idx in tqdm(seq_idxs):
-            image_path = hd_img_path + '{0:02d}_{1:02d}/{0:02d}_{1:02d}_{2:08d}.png'.format(cam['panel'], cam['node'],
-                                                                                            hd_idx)
+            # image_path = hd_img_path + '{0:02d}_{1:02d}/{0:02d}_{1:02d}_{2:08d}.png'.format(cam['panel'], cam['node'], hd_idx)
+            image_path = hd_img_path + '{0:02d}_{1:02d}/{0:02d}_{1:02d}_{2:08d}.jpg'.format(cam['panel'], cam['node'], hd_idx)
+
             skel_json_fname = hd_skel_json_path + 'body3DScene_{0:08d}.json'.format(hd_idx)
 
             img = cv2.imread(image_path)
@@ -104,47 +106,49 @@ def process_panoptic(panoptic_path, dataset_name, sequence_idx):
             padded_img[:re_img.shape[0], :re_img.shape[1]] = re_img
             h, w = re_img.shape[:2]
 
-            with open(skel_json_fname) as dfile:
-                bframe = json.load(dfile)
+            # with open(skel_json_fname) as dfile:
+            #     bframe = json.load(dfile)
             bboxes = list()
             gt_kpts3d = list()
             gt_kpts2d = list()
-            for body in bframe['bodies']:
-                skel = np.array(body['joints19']).reshape((-1, 4)).transpose()
-                pt = projectPoints(skel[0:3, :],
-                                   np.array(cam['K']), cam['R'], cam['t'],
-                                   cam['distCoef'])
-                kpts3d_J24 = np.zeros((24, 4))
-                kpts3d_J24[J24_to_J15] = skel.T
-                kpts3d_J24[:, -1] = kpts3d_J24[:, -1] > 0.1
-                valid = skel[3, :] > 0.1
-                pt_J24 = projectPoints(kpts3d_J24.T[0:3, :], np.array(cam['K']), cam['R'], cam['t'], cam['distCoef'])
-                kpts2d_J24 = np.zeros((24, 3))
-                kpts2d_J24[:, :2] = pt_J24[:2].T
-                kpts2d_J24[:, -1] = kpts3d_J24[:, -1]
-                s_kpts2d = np.zeros_like(kpts2d_J24)
-                s_kpts2d[..., -1] = kpts2d_J24[..., -1]
-                s_kpts2d[..., :-1] = kpts2d_J24[..., :-1] * scale_factor
-                kpts3d_cam = np.zeros_like(kpts3d_J24)
-                kpts3d_cam[:, :3] = (R @ kpts3d_J24.T[:3] + t).T / 100  # cm to m
-                kpts3d_cam[:, 3] = kpts3d_J24[:, 3]
-
-                valid_kps = s_kpts2d[s_kpts2d[:, 2] > 0, :2]
-                if len(valid_kps) == 0:
-                    tqdm.write(f"An invalid 2D pose found in {osp.basename(image_path)}")
-                    continue
-                x_min, y_min = valid_kps.min(axis=0)
-                x_max, y_max = valid_kps.max(axis=0)
-
-                new_x_min = min(max(x_min - (x_max - x_min) * EXPAND_FACTOR, 0), w)
-                new_y_min = min(max(y_min - (y_max - y_min) * EXPAND_FACTOR, 0), h)
-                new_x_max = min(max(x_max + (x_max - x_min) * EXPAND_FACTOR, 0), w)
-                new_y_max = min(max(y_max + (y_max - y_min) * EXPAND_FACTOR, 0), h)
-                bbox = np.array([new_x_min, new_y_min, new_x_max, new_y_max]).round().astype(int)
-                bboxes.append(bbox)
-                gt_kpts2d.append(s_kpts2d)
-                gt_kpts3d.append(kpts3d_cam)
-            dumped_img_path = osp.join(resized_dir, osp.basename(image_path))
+            # for body in bframe['bodies']:
+            #     skel = np.array(body['joints19']).reshape((-1, 4)).transpose()
+            #     pt = projectPoints(skel[0:3, :],
+            #                        np.array(cam['K']), cam['R'], cam['t'],
+            #                        cam['distCoef'])
+            #     kpts3d_J24 = np.zeros((24, 4))
+            #     # kpts3d_J24[J24_to_J15] = skel.T
+            #     kpts3d_J24[kpts_coco19] = skel.T
+            #
+            #     kpts3d_J24[:, -1] = kpts3d_J24[:, -1] > 0.1
+            #     valid = skel[3, :] > 0.1
+            #     pt_J24 = projectPoints(kpts3d_J24.T[0:3, :], np.array(cam['K']), cam['R'], cam['t'], cam['distCoef'])
+            #     kpts2d_J24 = np.zeros((24, 3))
+            #     kpts2d_J24[:, :2] = pt_J24[:2].T
+            #     kpts2d_J24[:, -1] = kpts3d_J24[:, -1]
+            #     s_kpts2d = np.zeros_like(kpts2d_J24)
+            #     s_kpts2d[..., -1] = kpts2d_J24[..., -1]
+            #     s_kpts2d[..., :-1] = kpts2d_J24[..., :-1] * scale_factor
+            #     kpts3d_cam = np.zeros_like(kpts3d_J24)
+            #     kpts3d_cam[:, :3] = (R @ kpts3d_J24.T[:3] + t).T / 100  # cm to m
+            #     kpts3d_cam[:, 3] = kpts3d_J24[:, 3]
+            #
+            #     valid_kps = s_kpts2d[s_kpts2d[:, 2] > 0, :2]
+            #     if len(valid_kps) == 0:
+            #         tqdm.write(f"An invalid 2D pose found in {osp.basename(image_path)}")
+            #         continue
+            #     x_min, y_min = valid_kps.min(axis=0)
+            #     x_max, y_max = valid_kps.max(axis=0)
+            #
+            #     new_x_min = min(max(x_min - (x_max - x_min) * EXPAND_FACTOR, 0), w)
+            #     new_y_min = min(max(y_min - (y_max - y_min) * EXPAND_FACTOR, 0), h)
+            #     new_x_max = min(max(x_max + (x_max - x_min) * EXPAND_FACTOR, 0), w)
+            #     new_y_max = min(max(y_max + (y_max - y_min) * EXPAND_FACTOR, 0), h)
+            #     bbox = np.array([new_x_min, new_y_min, new_x_max, new_y_max]).round().astype(int)
+            #     bboxes.append(bbox)
+            #     gt_kpts2d.append(s_kpts2d)
+            #     gt_kpts3d.append(kpts3d_cam)
+            dumped_img_path = osp.join(resized_dir, osp.basename(image_path).replace('jpg', 'png'))
             cv2.imwrite(dumped_img_path, padded_img)
             filename = osp.relpath(dumped_img_path, panoptic_path)
             cur_info = {'filename': filename, 'width': padded_img.shape[1], 'height': padded_img.shape[0],
