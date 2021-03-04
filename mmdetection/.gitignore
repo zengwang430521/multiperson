@@ -117,3 +117,6 @@ data
 *.log.json
 ./work_dirs
 ./test_results/*
+
+
+*.deb
