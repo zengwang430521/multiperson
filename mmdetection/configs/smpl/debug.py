@@ -177,7 +177,7 @@ common_val_cfg = dict(
 h36m_dataset_type = 'CommonDataset'
 
 h36m_data_root = '/home/wzeng/mydata/H36Mnew/c2f_vol/'
-h36m_eval_root = '/home/wzeng/mydata/MyH36MOrigin/images/'
+h36m_eval_root = '/home/wzeng/mydata/MyH36MOrigin/'
 
 coco_dataset_type = 'COCOKeypoints'
 coco_data_root = '/home/wzeng/mydata/coco/'
