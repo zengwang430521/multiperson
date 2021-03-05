@@ -59,7 +59,7 @@ model = dict(
         type='SMPLHead',
         in_size=14,
         in_channels=256,
-        loss_cfg=dict(type='SMPLLoss', normalize_kpts=True),
+        loss_cfg=dict(type='SMPLLoss', normalize_kpts=False),
     ),
     smpl_weight=1,
 )
