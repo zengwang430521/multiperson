@@ -183,42 +183,42 @@ panoptic_root = '/home/wzeng/mydata/panoptic/'
 lsp_root = '/home/wzeng/mydata/lsp_dataset_original/'
 
 datasets = [
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
+    #         img_prefix=coco_data_root + 'train2014/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=lsp_root + 'train.pkl',
+    #         img_prefix=lsp_root+'images',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=mpii_root + 'rcnn/val.pkl',
+    #         img_prefix=mpii_root + 'images/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
     dict(
         train=dict(
             type=dataset_type,
-            ann_file=dataset_root + 'coco/' + 'train.pkl',
-            img_prefix=dataset_root + 'coco/' + 'images/',
-            sample_weight=0.3,
+            ann_file=mpi_inf_3dhp_root + 'rcnn/val.pkl',
+            img_prefix=mpi_inf_3dhp_root,
+            sample_weight=0.1,
             **common_train_cfg
         ),
     ),
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=dataset_root + 'lsp/' + 'train.pkl',
-    #         img_prefix=dataset_root + 'lsp/' + 'images/',
-    #         sample_weight=0.3,
-    #         **common_train_cfg
-    #     ),
-    # ),
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=dataset_root + 'mpii/' + 'train.pkl',
-    #         img_prefix=dataset_root + 'mpii/' + 'images/',
-    #         sample_weight=0.3,
-    #         **common_train_cfg
-    #     ),
-    # ),
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=dataset_root + 'mpi_inf_3dhp/' + 'train.pkl',
-    #         img_prefix=dataset_root + 'mpi_inf_3dhp/' + 'images/',
-    #         sample_weight=0.1,
-    #         **common_train_cfg
-    #     ),
-    # ),
 
     dict(
         # train=dict(

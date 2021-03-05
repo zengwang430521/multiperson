@@ -213,7 +213,7 @@ datasets = [
         train=dict(
             type=dataset_type,
             ann_file=lsp_root + 'train.pkl',
-            img_prefix=lsp_root,
+            img_prefix=lsp_root + 'images',
             sample_weight=0.3,
             **common_train_cfg
         ),
