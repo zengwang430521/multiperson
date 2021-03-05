@@ -183,15 +183,51 @@ panoptic_root = '/home/wzeng/mydata/panoptic/'
 lsp_root = '/home/wzeng/mydata/lsp_dataset_original/'
 
 datasets = [
-
     dict(
         train=dict(
-            type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'rcnn/train.pkl',
-            img_prefix=h36m_data_root,
-            sample_weight=0.6,
+            type=dataset_type,
+            ann_file=dataset_root + 'coco/' + 'train.pkl',
+            img_prefix=dataset_root + 'coco/' + 'images/',
+            sample_weight=0.3,
             **common_train_cfg
         ),
+    ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=dataset_root + 'lsp/' + 'train.pkl',
+    #         img_prefix=dataset_root + 'lsp/' + 'images/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=dataset_root + 'mpii/' + 'train.pkl',
+    #         img_prefix=dataset_root + 'mpii/' + 'images/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=dataset_root + 'mpi_inf_3dhp/' + 'train.pkl',
+    #         img_prefix=dataset_root + 'mpi_inf_3dhp/' + 'images/',
+    #         sample_weight=0.1,
+    #         **common_train_cfg
+    #     ),
+    # ),
+
+    dict(
+        # train=dict(
+        #     type=h36m_dataset_type,
+        #     ann_file=h36m_data_root + 'rcnn/train.pkl',
+        #     img_prefix=h36m_data_root,
+        #     sample_weight=0.6,
+        #     **common_train_cfg
+        # ),
         val=dict(
             type=h36m_dataset_type,
             ann_file=h36m_data_root + 'rcnn/val_p2.pkl',
