@@ -98,5 +98,6 @@ class Renderer(object):
         return output_images
 
     def delete(self):
-        self.renderer.delete()
+        # self.renderer.delete()
+        pass
 
