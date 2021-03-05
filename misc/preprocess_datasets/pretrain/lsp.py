@@ -39,7 +39,9 @@ def lsp_extract(dataset_path, out_path, out_size=256):
         bbox = [min(part14[:,0]), min(part14[:,1]),
                 max(part14[:,0]), max(part14[:,1])]
         center = [(bbox[2]+bbox[0])/2, (bbox[3]+bbox[1])/2]
-        scale = scaleFactor*max(bbox[2]-bbox[0], bbox[3]-bbox[1])/200
+        # scale = scaleFactor*max(bbox[2]-bbox[0], bbox[3]-bbox[1])/200
+        scale = scaleFactor*max(bbox[2]-bbox[0], bbox[3]-bbox[1])
+
         # update keypoints
         part = np.zeros([24,3])
         part[:14] = np.hstack([part14, np.ones([14,1])])
