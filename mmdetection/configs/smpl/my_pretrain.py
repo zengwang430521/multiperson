@@ -254,7 +254,7 @@ lr_config = SequenceLrUpdaterHook(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    seq=[1e-4]
+    seq=[1e-3]
 )
 checkpoint_config = dict(interval=1)
 # yapf:disable
