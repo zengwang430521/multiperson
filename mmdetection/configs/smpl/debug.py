@@ -186,27 +186,15 @@ datasets = [
 
     dict(
         train=dict(
-            type=dataset_type,
-            ann_file=lsp_root + 'train.pkl',
-            img_prefix=lsp_root,
-            sample_weight=0.3,
+            type=h36m_dataset_type,
+            ann_file=h36m_data_root + 'rcnn/train.pkl',
+            img_prefix=h36m_data_root,
+            sample_weight=0.6,
             **common_train_cfg
         ),
-    ),
-    dict(
-        train=dict(
-            type=dataset_type,
-            ann_file=mpii_root + 'rcnn/val.pkl',
-            img_prefix=mpii_root + 'images/',
-            sample_weight=0.3,
-            **common_train_cfg
-        ),
-    ),
-
-    dict(
         val=dict(
             type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'rcnn/val.pkl',
+            ann_file=h36m_data_root + 'rcnn/val_p2.pkl',
             img_prefix=h36m_eval_root,
             sample_weight=0.6,
             **common_val_cfg
