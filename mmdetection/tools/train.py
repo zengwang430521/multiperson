@@ -1,6 +1,7 @@
 from __future__ import division
 import warnings
 warnings.simplefilter("ignore", UserWarning)
+warnings.simplefilter("ignore", Warning)
 
 import argparse
 import os

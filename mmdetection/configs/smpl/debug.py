@@ -215,8 +215,8 @@ datasets = [
 
 ]
 data = dict(
-    imgs_per_gpu=8,
-    workers_per_gpu=8,
+    imgs_per_gpu=2,
+    workers_per_gpu=0,
     train=common_train_cfg,
     val=common_val_cfg,
 )
@@ -245,7 +245,7 @@ resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1), ('val', 1)]
 
 log_config = dict(
-    interval=50,
+    interval=20,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type=SMPLBoard, log_dir=work_dir, bboxes_only=False, K_SMALLEST=1,

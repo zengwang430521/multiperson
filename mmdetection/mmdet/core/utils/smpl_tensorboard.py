@@ -58,6 +58,8 @@ class SMPLBoard(mmcv_logger.LoggerHook):
         self.draw_rpn_bbox = draw_rpn_bbox
         self.aten_threshold = aten_threshold
 
+        self.render = Renderer(focal_length=self.focal_length)
+
     @master_only
     def before_run(self, runner):
         try:
@@ -72,7 +74,7 @@ class SMPLBoard(mmcv_logger.LoggerHook):
 
     @master_only
     def log(self, runner):
-        self.render = Renderer(focal_length=self.focal_length)
+        # self.render = Renderer(focal_length=self.focal_length)
         # Log learning rate in training mode
         if runner.mode == 'train':
             self.writer.add_scalar('lr', runner.current_lr()[0], runner.iter)
