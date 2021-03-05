@@ -185,32 +185,6 @@ lsp_root = '/home/wzeng/mydata/lsp_dataset_original/'
 datasets = [
     dict(
         train=dict(
-            type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'rcnn/train.pkl',
-            img_prefix=h36m_data_root,
-            sample_weight=0.6,
-            **common_train_cfg
-        ),
-        val=dict(
-            type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'rcnn/val.pkl',
-            img_prefix=h36m_eval_root,
-            sample_weight=0.6,
-            **common_val_cfg
-        ),
-    ),
-
-    dict(
-        train=dict(
-            type=dataset_type,
-            ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
-            img_prefix=coco_data_root + 'train2014/',
-            sample_weight=0.3,
-            **common_train_cfg
-        ),
-    ),
-    dict(
-        train=dict(
             type=dataset_type,
             ann_file=lsp_root + 'train.pkl',
             img_prefix=lsp_root,
@@ -228,24 +202,80 @@ datasets = [
         ),
     ),
     dict(
-        train=dict(
-            type=dataset_type,
-            ann_file=mpi_inf_3dhp_root + 'rcnn/val.pkl',
-            img_prefix=mpi_inf_3dhp_root,
-            sample_weight=0.1,
-            **common_train_cfg
+        val=dict(
+            type=h36m_dataset_type,
+            ann_file=h36m_data_root + 'rcnn/val.pkl',
+            img_prefix=h36m_eval_root,
+            sample_weight=0.6,
+            **common_val_cfg
         ),
     ),
+
+    # dict(
+    #     train=dict(
+    #         type=h36m_dataset_type,
+    #         ann_file=h36m_data_root + 'rcnn/train.pkl',
+    #         img_prefix=h36m_data_root,
+    #         sample_weight=0.6,
+    #         **common_train_cfg
+    #     ),
+    #     val=dict(
+    #         type=h36m_dataset_type,
+    #         ann_file=h36m_data_root + 'rcnn/val.pkl',
+    #         img_prefix=h36m_eval_root,
+    #         sample_weight=0.6,
+    #         **common_val_cfg
+    #     ),
+    # ),
+    #
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
+    #         img_prefix=coco_data_root + 'train2014/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=lsp_root + 'train.pkl',
+    #         img_prefix=lsp_root,
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=mpii_root + 'rcnn/val.pkl',
+    #         img_prefix=mpii_root + 'images/',
+    #         sample_weight=0.3,
+    #         **common_train_cfg
+    #     ),
+    # ),
+    # dict(
+    #     train=dict(
+    #         type=dataset_type,
+    #         ann_file=mpi_inf_3dhp_root + 'rcnn/val.pkl',
+    #         img_prefix=mpi_inf_3dhp_root,
+    #         sample_weight=0.1,
+    #         **common_train_cfg
+    #     ),
+    # ),
 ]
 data = dict(
     imgs_per_gpu=4,
-    workers_per_gpu=8,
+    workers_per_gpu=4,
     train=common_train_cfg,
     val=common_val_cfg,
 )
 # optimizer
 # optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
-optimizer = dict(type=RAdam, lr=1e-4, weight_decay=0.0001)
+# optimizer = dict(type=RAdam, lr=1e-4, weight_decay=0.0001)
+optimizer = dict(type=RAdam, lr=1e-3, weight_decay=0.0001)
+
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
 lr_config = SequenceLrUpdaterHook(
