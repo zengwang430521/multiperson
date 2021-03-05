@@ -266,7 +266,7 @@ datasets = [
     # ),
 ]
 data = dict(
-    imgs_per_gpu=4,
+    imgs_per_gpu=8,
     workers_per_gpu=4,
     train=common_train_cfg,
     val=common_val_cfg,
