@@ -99,7 +99,7 @@ eval_dataset_mapper = dict(
 
     full_h36m=dict(
         type='CommonDataset',
-        ann_file='/home/wzeng/mydata/H36Mnew/c2f_vol/rcnn/val.pkl',
+        ann_file='/home/wzeng/mydata/H36Mnew/c2f_vol/rcnn/val_p2.pkl',
         img_prefix='/home/wzeng/mydata/MyH36MOrigin',
         # **common_val_cfg
     ),

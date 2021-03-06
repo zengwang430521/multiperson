@@ -291,7 +291,8 @@ data = dict(
     val=common_val_cfg,
 )
 # optimizer
-optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
+# optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
+optimizer = dict(type=RAdam, lr=5e-5, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 adv_optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
