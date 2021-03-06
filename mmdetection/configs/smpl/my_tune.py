@@ -169,7 +169,7 @@ common_val_cfg = dict(
     with_trans=True,
     max_samples=64,
     square_bbox=square_bbox,
-    mosh_path='data/h36m/extras/h36m_single_train_openpose.npz',
+    mosh_path='data/CMU_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
 )
