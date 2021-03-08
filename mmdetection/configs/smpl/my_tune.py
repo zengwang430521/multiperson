@@ -148,7 +148,7 @@ common_train_cfg = dict(
     with_trans=True,
     # max_samples=1024
     square_bbox=square_bbox,
-    mosh_path='data/CMU_mosh.npz',
+    mosh_path='data/h36m_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
     # rot_factor=30,
@@ -169,7 +169,7 @@ common_val_cfg = dict(
     with_trans=True,
     max_samples=64,
     square_bbox=square_bbox,
-    mosh_path='data/CMU_mosh.npz',
+    mosh_path='data/h36m_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
 )
@@ -289,10 +289,10 @@ data = dict(
     val=common_val_cfg,
 )
 # optimizer
-optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
+optimizer = dict(type=RAdam, lr=4e-5, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
-adv_optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
+adv_optimizer = dict(type=RAdam, lr=4e-5, weight_decay=0.0001)
 adv_optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 # learning policy
@@ -300,7 +300,7 @@ lr_config = SequenceLrUpdaterHook(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    seq=[1e-5]
+    seq=[4e-5]
 )
 checkpoint_config = dict(interval=1)
 # yapf:disable
@@ -308,7 +308,7 @@ checkpoint_config = dict(interval=1)
 total_epochs = 12000
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/tune'
+work_dir = './work_dirs/my_tune'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1)]

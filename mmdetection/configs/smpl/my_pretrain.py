@@ -245,7 +245,8 @@ data = dict(
 )
 # optimizer
 # optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
-optimizer = dict(type=RAdam, lr=1e-4, weight_decay=0.0001)
+# optimizer = dict(type=RAdam, lr=1e-4, weight_decay=0.0001)
+optimizer = dict(type=RAdam, lr=4e-4, weight_decay=0.0001)
 
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # learning policy
@@ -253,15 +254,16 @@ lr_config = SequenceLrUpdaterHook(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    seq=[1e-4]
+    seq=[4e-4]
 )
+
 checkpoint_config = dict(interval=1)
 # yapf:disable
 # runtime settings
 total_epochs = 12000
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/pretrain'
+work_dir = './work_dirs/my_pretrain'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1), ('val', 1)]
