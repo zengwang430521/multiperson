@@ -317,7 +317,7 @@ resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1), ('val', 1)]
 
 log_config = dict(
-    interval=50,
+    interval=20,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type=SMPLBoard, log_dir=work_dir, bboxes_only=False, K_SMALLEST=1,
