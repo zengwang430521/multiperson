@@ -22,6 +22,7 @@ import abc
 import math
 import h5py
 import scipy.io as scio
+import os
 
 # from sdf import CollisionVolume
 
@@ -178,6 +179,40 @@ class H36MEvalHandler(EvalHandler):
                      'pred_rotmat': pred_results['pred_rotmat'],
                      'pred_betas': pred_results['pred_betas'],
                      }
+
+        if self.viz_dir:
+            file_name = data_batch['img_meta'].data[0][0]['file_name']
+            fname = osp.basename(file_name)
+            bboxes = pred_results['bboxes'][0][:, :4]
+            pred_translation = pred_results['pred_translation'].cpu()
+            img = data_batch['img'].data[0][0].clone()
+            img = img.clone() * torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1) + torch.tensor(
+                [0.485, 0.456, 0.406]).view(3, 1, 1)
+            img_cv = img.clone().numpy()
+            img_cv = (img_cv * 255).astype(np.uint8).transpose([1, 2, 0]).copy()
+
+            index = error_smpl.argmin()
+            bbox = bboxes[index]
+            img_cv = cv2.rectangle(img_cv, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255, 0, 0), 2)
+            img_cv = draw_text(img_cv, {'error': str(mpjpe)});
+            img_cv = (img_cv / 255.)
+
+            torch.set_printoptions(precision=1)
+            img_render = self.renderer([torch.tensor(img_cv.transpose([2, 0, 1]))], [pred_vertices],
+                                       translation=[pred_translation])
+
+            bv_verts = get_bv_verts(bboxes, pred_vertices, pred_translation,
+                                    img.shape, self.FOCAL_LENGTH)
+            img_bv = self.renderer([torch.ones_like(img)], [bv_verts],
+                                   translation=[torch.zeros(bv_verts.shape[0], 3)])
+            img_grid = torchvision.utils.make_grid(torch.tensor(([img_render[0], img_bv[0]])),
+                                                   nrow=2).numpy().transpose([1, 2, 0])
+            img_grid[img_grid > 1] = 1
+            img_grid[img_grid < 0] = 0
+            if not osp.exists(self.viz_dir):
+                os.makedirs(self.viz_dir)
+            plt.imsave(osp.join(self.viz_dir, fname), img_grid)
+
         return save_pack
 
     def log(self):
@@ -322,6 +357,8 @@ class PanopticEvalHandler(EvalHandler):
                                                    nrow=2).numpy().transpose([1, 2, 0])
             img_grid[img_grid > 1] = 1
             img_grid[img_grid < 0] = 0
+            if not osp.exists(self.viz_dir):
+                os.makedirs(self.viz_dir)
             plt.imsave(osp.join(self.viz_dir, fname), img_grid)
         return save_pack
 
