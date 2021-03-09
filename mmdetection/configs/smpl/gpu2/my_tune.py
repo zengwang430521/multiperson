@@ -323,5 +323,5 @@ log_config = dict(
 evaluation = dict(interval=1)
 # yapf:enable
 fuse = True
-time_limit = 1 * 3000  # In sceonds
+# time_limit = 1 * 3000  # In sceonds
 log_grad = True
