@@ -308,7 +308,7 @@ checkpoint_config = dict(interval=1)
 total_epochs = 2
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/my_tune'
+work_dir = './work_dirs/gpu2/tune'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1)]

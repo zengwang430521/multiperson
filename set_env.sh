@@ -70,13 +70,13 @@ done
 
 
 # 240k iteration # 45536 * 6
-python3 tools/train.py configs/smpl/my_pretrain.py --create_dummy
-python3 tools/train.py configs/smpl/my_pretrain.py --gpus=8
+python3 tools/train.py configs/smpl/gpu2/my_pretrain.py --create_dummy
+python3 tools/train.py configs/smpl/gpu2/my_pretrain.py --gpus=2
 
 # 180k iteration # 60220 * 3
-python3 tools/train.py configs/smpl/my_baseline.py --load_pretrain ./work_dirs/my_pretrain/latest.pth
-python3 tools/train.py configs/smpl/my_baseline.py  --gpus=8
+python3 tools/train.py configs/smpl/gpu2/my_baseline.py --load_pretrain ./work_dirs/gpu2/pretrain/latest.pth
+python3 tools/train.py configs/smpl/gpu2/my_baseline.py  --gpus=2
 
 # 100k iteration # 60220 * 2
-python3 tools/train.py configs/smpl/my_tune.py --load_pretrain ./work_dirs/my_baseline/latest.pth
-python3 tools/train.py configs/smpl/my_tune.py --gpus=8
+python3 tools/train.py configs/smpl/gpu2/my_tune.py --load_pretrain ./work_dirs/gpu2/baseline/latest.pth
+python3 tools/train.py configs/smpl/gpu2/my_tune.py --gpus=2

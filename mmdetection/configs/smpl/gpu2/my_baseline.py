@@ -310,7 +310,7 @@ checkpoint_config = dict(interval=1)
 total_epochs = 3
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/my_baseline'
+work_dir = './work_dirs/gpu2/baseline'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1), ('val', 1)]

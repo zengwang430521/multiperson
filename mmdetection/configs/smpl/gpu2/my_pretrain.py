@@ -262,7 +262,7 @@ checkpoint_config = dict(interval=1)
 total_epochs = 6
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/my_pretrain'
+work_dir = './work_dirs/gpu2/pretrain'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1), ('val', 1)]
