@@ -277,4 +277,4 @@ log_config = dict(
 # yapf:enable
 evaluation = dict(interval=1)
 fuse = True
-# time_limit = 1 * 3000  # In sceonds
+time_limit = 1 * 3000  # In sceonds
