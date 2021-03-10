@@ -259,7 +259,7 @@ lr_config = SequenceLrUpdaterHook(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 # runtime settings
-total_epochs = 6
+total_epochs = 60
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/gpu2/pretrain'
