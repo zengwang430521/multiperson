@@ -73,7 +73,9 @@ model = dict(
     ),
     smpl_weight=1,
 )
-re_weight = {'loss_disc': 1 / 60., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+# re_weight = {'loss_disc': 1 / 60., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+re_weight = {'loss_disc': 1 / 180., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -305,7 +307,7 @@ lr_config = SequenceLrUpdaterHook(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 # runtime settings
-total_epochs = 20
+total_epochs = 40
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/gpu2/tune'

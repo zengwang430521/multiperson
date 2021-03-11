@@ -3,7 +3,10 @@ from mmdetection.mmdet.core.utils.smpl_tensorboard import SMPLBoard
 import os.path as osp
 from mmdetection.mmdet.core.utils.radam import RAdam
 from mmdetection.mmdet.core.utils.lr_hooks import SequenceLrUpdaterHook, PowerLrUpdaterHook
+import math
 
+WITH_NR = True
+FOCAL_LENGTH = 1000
 model = dict(
     type='SMPLRCNN',
     pretrained='modelzoo://resnet50',
@@ -59,10 +62,18 @@ model = dict(
         type='SMPLHead',
         in_size=14,
         in_channels=256,
-        loss_cfg=dict(type='SMPLLoss', normalize_kpts=True),
+        loss_cfg=dict(type='SMPLLoss', normalize_kpts=True,
+                      FOCAL_LENGTH=FOCAL_LENGTH,
+                      adversarial_cfg=True,
+                      nr_batch_rank=WITH_NR, img_size=(832, 512),
+                      inner_robust_sdf=0.2, use_sdf=True,
+                      re_weight={'batch_rank': 100., 'sdf': 0.01},
+                      kpts_loss_type='MSELoss',
+                      ),
     ),
     smpl_weight=1,
 )
+re_weight = {'loss_disc': 1 / 60., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -122,7 +133,7 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 square_bbox = False
 common_train_cfg = dict(
-    img_scale=(256, 256),
+    img_scale=(832, 512),
     img_norm_cfg=img_norm_cfg,
     size_divisor=32,
     flip_ratio=0.5,
@@ -137,10 +148,13 @@ common_train_cfg = dict(
     with_trans=True,
     # max_samples=1024
     square_bbox=square_bbox,
+    mosh_path='data/h36m_mosh.npz',
+    with_nr=WITH_NR,
+    use_poly=True,
     # rot_factor=30,
 )
 common_val_cfg = dict(
-    img_scale=(256, 256),
+    img_scale=(832, 512),
     img_norm_cfg=img_norm_cfg,
     size_divisor=32,
     flip_ratio=0,
@@ -154,17 +168,11 @@ common_val_cfg = dict(
     with_shape=True,
     with_trans=True,
     max_samples=64,
-    square_bbox=square_bbox
+    square_bbox=square_bbox,
+    mosh_path='data/h36m_mosh.npz',
+    with_nr=WITH_NR,
+    use_poly=True,
 )
-
-# h36m_dataset_type = 'H36MDataset'
-# h36m_data_root = 'data/h36m/'
-# coco_dataset_type = 'COCOKeypoints'
-# coco_data_root = 'data/coco/'
-
-dataset_type = 'CommonDataset'
-dataset_root = 'data/rcnn-pretrain/'
-
 
 h36m_dataset_type = 'CommonDataset'
 
@@ -180,63 +188,99 @@ mpii_root = '/home/wzeng/mydata/mpii/'
 mpi_inf_3dhp_root = '/home/wzeng/mydata/mpi_inf_3dhp_new/'
 panoptic_root = '/home/wzeng/mydata/panoptic/'
 
-lsp_root = '/home/wzeng/mydata/lsp_dataset_original/'
-
 datasets = [
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
-    #         img_prefix=coco_data_root + 'train2014/',
-    #         sample_weight=0.3,
-    #         **common_train_cfg
-    #     ),
-    # ),
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=lsp_root + 'train.pkl',
-    #         img_prefix=lsp_root+'images',
-    #         sample_weight=0.3,
-    #         **common_train_cfg
-    #     ),
-    # ),
-    # dict(
-    #     train=dict(
-    #         type=dataset_type,
-    #         ann_file=mpii_root + 'rcnn/val.pkl',
-    #         img_prefix=mpii_root + 'images/',
-    #         sample_weight=0.3,
-    #         **common_train_cfg
-    #     ),
-    # ),
     dict(
         train=dict(
-            type=dataset_type,
-            ann_file=mpi_inf_3dhp_root + 'rcnn/val.pkl',
-            img_prefix=mpi_inf_3dhp_root,
-            sample_weight=0.1,
+            type=h36m_dataset_type,
+            ann_file=h36m_data_root + 'rcnn/train.pkl',
+            img_prefix=h36m_data_root,
+            sample_weight=0.6,
             **common_train_cfg
         ),
-    ),
-
-    dict(
-        # train=dict(
-        #     type=h36m_dataset_type,
-        #     ann_file=h36m_data_root + 'rcnn/train.pkl',
-        #     img_prefix=h36m_data_root,
-        #     sample_weight=0.6,
-        #     **common_train_cfg
-        # ),
         val=dict(
             type=h36m_dataset_type,
-            ann_file=h36m_data_root + 'rcnn/val_p2.pkl',
+            ann_file=h36m_data_root + 'rcnn/val.pkl',
             img_prefix=h36m_eval_root,
             sample_weight=0.6,
             **common_val_cfg
         ),
     ),
-
+    dict(
+        train=dict(
+            type=common_dataset,
+            ann_file=coco_data_root + 'annotations/train_densepose_2014_depth_nocrowd.pkl',
+            img_prefix=coco_data_root + 'train2014/',
+            sample_weight=0.3,
+            **common_train_cfg
+        ),
+        val=dict(
+            type=common_dataset,
+            # ann_file=coco_data_root + 'annotations/val_densepose_2014_scene.pkl',
+            ann_file=coco_data_root + 'annotations/val_densepose_2014_depth_nocrowd.pkl',
+            img_prefix=coco_data_root + 'val2014/',
+            sample_weight=0.3,
+            **common_val_cfg
+        ),
+    ),
+    dict(
+        train=dict(
+            type=common_dataset,
+            ann_file=pose_track_root + 'rcnn/train.pkl',
+            img_prefix=pose_track_root,
+            sample_weight=0.3,
+            **common_train_cfg
+        ),
+        val=dict(
+            type=common_dataset,
+            ann_file=pose_track_root + 'rcnn/val.pkl',
+            img_prefix=pose_track_root,
+            sample_weight=0.3,
+            **common_val_cfg
+        ),
+    ),
+    dict(
+        train=dict(
+            type=common_dataset,
+            ann_file=mpii_root + 'rcnn/train.pkl',
+            img_prefix=mpii_root + 'images/',
+            sample_weight=0.3,
+            **common_train_cfg
+        ),
+        val=dict(
+            type=common_dataset,
+            ann_file=mpii_root + 'rcnn/val.pkl',
+            img_prefix=mpii_root + 'images/',
+            sample_weight=0.3,
+            **common_val_cfg
+        ),
+    ),
+    dict(
+        train=dict(
+            type=common_dataset,
+            ann_file=mpi_inf_3dhp_root + 'rcnn/train.pkl',
+            img_prefix=mpi_inf_3dhp_root,
+            sample_weight=0.1,
+            **common_train_cfg
+        ),
+        val=dict(
+            type=common_dataset,
+            ann_file=mpi_inf_3dhp_root + 'rcnn/val.pkl',
+            img_prefix=mpi_inf_3dhp_root,
+            sample_weight=0.1,
+            ignore_3d=True,
+            **common_val_cfg
+        ),
+    ),
+    dict(
+        val=dict(
+            type=common_dataset,
+            ann_file=panoptic_root + 'processed/annotations/160422_ultimatum1.pkl',
+            img_prefix=panoptic_root,
+            sample_weight=0.6,
+            ignore_3d=True,
+            **common_val_cfg
+        ),
+    ),
 ]
 data = dict(
     imgs_per_gpu=2,
@@ -245,37 +289,39 @@ data = dict(
     val=common_val_cfg,
 )
 # optimizer
-# optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
-# optimizer = dict(type=RAdam, lr=1e-4, weight_decay=0.0001)
-optimizer = dict(type=RAdam, lr=1e-3, weight_decay=0.0001)
-
+optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+
+adv_optimizer = dict(type=RAdam, lr=1e-5, weight_decay=0.0001)
+adv_optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+
 # learning policy
 lr_config = SequenceLrUpdaterHook(
     warmup='linear',
     warmup_iters=500,
     warmup_ratio=1.0 / 3,
-    seq=[1e-3]
+    seq=[1e-5]
 )
 checkpoint_config = dict(interval=1)
 # yapf:disable
 # runtime settings
-total_epochs = 12000
+total_epochs = 20
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/pretrain'
+work_dir = './work_dirs/debug'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
-workflow = [('train', 1), ('val', 1)]
+workflow = [('train', 1)]
 
 log_config = dict(
     interval=20,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type=SMPLBoard, log_dir=work_dir, bboxes_only=False, K_SMALLEST=1,
-             detail_mode=False)
+             detail_mode=False, FOCAL_LENGTH=FOCAL_LENGTH, )
     ])
-# yapf:enable
 evaluation = dict(interval=1)
+# yapf:enable
 fuse = True
 time_limit = 1 * 3000  # In sceonds
+log_grad = True
