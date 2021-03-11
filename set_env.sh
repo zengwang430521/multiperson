@@ -75,7 +75,7 @@ CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_pretrain.py
 
 # 180k iteration # 60220 * 3
 CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_baseline.py --load_pretrain ./work_dirs/gpu2/pretrain/latest.pth
-CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_baseline.py  --gpus=2
+while true; do  CUDA_VISIBLE_DEVICES=6,7 python3 tools/train.py configs/smpl/gpu2/my_baseline.py  --gpus=2; done
 
 # 100k iteration # 60220 * 2
 CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_tune.py --load_pretrain ./work_dirs/gpu2/baseline/latest.pth
