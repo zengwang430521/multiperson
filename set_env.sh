@@ -85,3 +85,5 @@ while true; do CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2
 CUDA_VISIBLE_DEVICES=0,1 python3 tools/train.py configs/smpl/my_tune.py --load_pretrain data/checkpoint.pt
 
 
+CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_tune2.py --load_pretrain ./work_dirs/gpu2/baseline/latest.pth
+while true; do CUDA_VISIBLE_DEVICES=4,5 python3 tools/train.py configs/smpl/gpu2/my_tune2.py --gpus=2; done

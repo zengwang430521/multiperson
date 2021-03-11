@@ -73,7 +73,9 @@ model = dict(
     ),
     smpl_weight=1,
 )
-re_weight = {'loss_disc': 1 / 60., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+# re_weight = {'loss_disc': 1 / 60., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+re_weight = {'loss_disc': 1 / 600., 'adv_loss_fake': 1 / 60., 'adv_loss_real': 1 / 60.}
+
 # model training and testing settings
 train_cfg = dict(
     rpn=dict(
@@ -148,7 +150,7 @@ common_train_cfg = dict(
     with_trans=True,
     # max_samples=1024
     square_bbox=square_bbox,
-    mosh_path='data/CMU_mosh.npz',
+    mosh_path='data/h36m_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
     # rot_factor=30,
@@ -169,7 +171,7 @@ common_val_cfg = dict(
     with_trans=True,
     max_samples=64,
     square_bbox=square_bbox,
-    mosh_path='data/CMU_mosh.npz',
+    mosh_path='data/h36m_mosh.npz',
     with_nr=WITH_NR,
     use_poly=True,
 )
@@ -283,8 +285,8 @@ datasets = [
     ),
 ]
 data = dict(
-    imgs_per_gpu=2,
-    workers_per_gpu=0,
+    imgs_per_gpu=4,
+    workers_per_gpu=4,
     train=common_train_cfg,
     val=common_val_cfg,
 )
@@ -305,16 +307,16 @@ lr_config = SequenceLrUpdaterHook(
 checkpoint_config = dict(interval=1)
 # yapf:disable
 # runtime settings
-total_epochs = 20
+total_epochs = 40
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-work_dir = './work_dirs/debug'
+work_dir = './work_dirs/gpu2/tune2'
 load_from = None
 resume_from = osp.join(work_dir, 'latest.pth')
 workflow = [('train', 1)]
 
 log_config = dict(
-    interval=20,
+    interval=50,
     hooks=[
         dict(type='TextLoggerHook'),
         dict(type=SMPLBoard, log_dir=work_dir, bboxes_only=False, K_SMALLEST=1,
