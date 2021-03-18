@@ -30,6 +30,7 @@ def read_calibration(calib_file, vid_list):
         Ts.append(T)
     return Ks, Rs, Ts
 
+
 def train_data(dataset_path, out_path, joints_idx, scaleFactor, extract_img=False, fits_3d=None):
 
     joints17_idx = [4, 18, 19, 20, 23, 24, 25, 3, 5, 6, 7, 9, 10, 11, 14, 15, 16]
